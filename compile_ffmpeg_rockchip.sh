@@ -25,7 +25,9 @@ sudo apt install libopus-dev # Version > 1.1! Newer in stretch arm64
 
 # Compile additional packages
 ## Define environment variables
-export FFMPEG_COMPILE_DIR="~/compile/ffmpeg"
+### Directory where all sources will be downloaded and built
+export FFMPEG_COMPILE_DIR="/home/<username>/compile/ffmpeg"
+### They can be as they are
 export FFMPEG_SOURCES="${FFMPEG_COMPILE_DIR}/ffmpeg_sources"
 export LIBAOM_SOURCES="${FFMPEG_COMPILE_DIR}/libaom_sources"
 export MPP_SOURCES="${FFMPEG_COMPILE_DIR}/mpp_sources"
@@ -113,13 +115,14 @@ cd ..
 chmod 755 ${MPP_SOURCES}/mpp/rockchip_mpp.pc ${MPP_SOURCES}/mpp/rockchip_vpu.pc && cp ${MPP_SOURCES}/mpp/rockchip_mpp.pc ${MPP_SOURCES}/mpp/rockchip_vpu.pc ${PKG_CONFIG_PATH}
 
 # Compile ffmpeg:
+ffmpeg_source_dir="ffmpeg-rockchip"
 export BUILD_START_TIME=$(date +%Y-%m-%d_%H:%M:%S) && \
 cd ${FFMPEG_SOURCES} && \
-if [ ! -d ffmpeg ]; then git clone https://gitlab.com/stevog/ffmpeg-rockchip.git ; fi && \
-cd ffmpeg && \
+if [ ! -d ${ffmpeg_source_dir} ]; then git clone https://gitlab.com/stevog/ffmpeg-rockchip.git ${FFMPEG_SOURCE_DIR} ; fi && \
+cd ${ffmpeg_source_dir} && \
 git checkout rockchip-ffmpeg-stevog/release/4.2 && \
 git pull && \
-cp ${PKG_CONFIG_PATH}/* ${FFMPEG_SOURCES}/ffmpeg && \
+cp ${PKG_CONFIG_PATH}/* ${FFMPEG_SOURCES}/${ffmpeg_source_dir} && \
 cp ${PKG_CONFIG_PATH}/* ${FFMPEG_BIN} && \
 PATH="${FFMPEG_BIN}:$PATH" ./configure \
   --prefix="${FFMPEG_BUILD}" \
@@ -154,14 +157,14 @@ tail -f ${FFMPEG_SOURCES}/log-configure-${BUILD_START_TIME}.txt
 ################# <file> is unchanged ##################
 
 export BUILD_START_TIME=$(date +%Y-%m-%d_%H:%M:%S) && \
-cd ${FFMPEG_SOURCES}/ffmpeg && \
+cd ${FFMPEG_SOURCES}/${ffmpeg_source_dir} && \
 PATH="${FFMPEG_BIN}:$PATH" make >${FFMPEG_SOURCES}/log-make-${BUILD_START_TIME}.txt 2>&1 & \
 disown && \
 cd ${FFMPEG_SOURCES} && \
 tail -f ${FFMPEG_SOURCES}/log-make-${BUILD_START_TIME}.txt
 
-sudo cp ${FFMPEG_SOURCES}/ffmpeg/ffmpeg ${FFMPEG_SOURCES}/ffmpeg/ffprobe /usr/lib/jellyfin-ffmpeg/ && \
-sudo cp ${FFMPEG_SOURCES}/ffmpeg/ffmpeg ${FFMPEG_SOURCES}/ffmpeg/ffprobe /usr/local/bin
+sudo cp ${FFMPEG_SOURCES}/${ffmpeg_source_dir}/ffmpeg ${FFMPEG_SOURCES}/${ffmpeg_source_dir}/ffprobe /usr/lib/jellyfin-ffmpeg/ && \
+sudo cp ${FFMPEG_SOURCES}/${ffmpeg_source_dir}/ffmpeg ${FFMPEG_SOURCES}/${ffmpeg_source_dir}/ffprobe /usr/local/bin
 
 ############### Is done when message is: ###############
 ############### LD      ffprobe_g ######################
